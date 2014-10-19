@@ -14,18 +14,26 @@ js2r = (function () {
             orderCounter: 0,
             testString: testString,
             pattern: {},
-            previousCall: ""
+            previousCall: "",
+            global: false,
+            ignoreCase: false,
+            multiline: false
         };
         return newInstance;
     };
 
     JsToRegex.DEBUG = false;
     JsToRegex.ANY = ".*";
+    JsToRegex.flags = {
+        GLOBAL: 2,
+        IGNORE_CASE: 4,
+        MULTILINE: 8
+    };
 
 
     // Public methods
     JsToRegex.prototype.isMatch = function () {
-        var regex = buildRegex(expressions[this.guid].pattern, expressions[this.guid].orderCounter),
+        var regex = buildRegex(expressions[this.guid]),
             testString = expressions[this.guid].testString,
             result = regex.test(testString);
         log("isMatch called with the test string: " + testString);
@@ -34,7 +42,7 @@ js2r = (function () {
     };
 
     JsToRegex.prototype.getMatch = function () {
-        var regex = buildRegex(expressions[this.guid].pattern, expressions[this.guid].orderCounter),
+        var regex = buildRegex(expressions[this.guid]),
             testString = expressions[this.guid].testString,
             result = regex.exec(testString) || [];
         log("getMatch is called with the test string: " + testString);
@@ -47,7 +55,7 @@ js2r = (function () {
     };
 
     JsToRegex.prototype.compile = function () {
-        return buildRegex(expressions[this.guid].pattern, expressions[this.guid].orderCounter);
+        return buildRegex(expressions[this.guid]);
     };
 
     JsToRegex.prototype.startsWith = function (patternString) {
@@ -124,6 +132,40 @@ js2r = (function () {
     JsToRegex.prototype.or = function (patternString) {
         return this[expressions[this.guid].previousCall].call(this, patternString);
     };
+    
+    JsToRegex.prototype.flags = function (flags) {
+        switch (flags) {
+            case 2: 
+                expressions[this.guid].global = true; 
+                break;
+            case 4: 
+                expressions[this.guid].ignoreCase = true; 
+                break;
+            case 6: 
+                expressions[this.guid].global = true; 
+                expressions[this.guid].ignoreCase = true; 
+                break;
+            case 8:
+                expressions[this.guid].multiline = true;
+                break;
+            case 10:
+                expressions[this.guid].global = true; 
+                expressions[this.guid].multiline = true;
+                break;
+            case 12:
+                expressions[this.guid].ignoreCase = true; 
+                expressions[this.guid].multiline = true;
+                break;
+            case 14:
+                expressions[this.guid].global = true; 
+                expressions[this.guid].ignoreCase = true; 
+                expressions[this.guid].multiline = true;
+                break;
+            default:
+                throw "Invalid flag option: " + flags;
+        }    
+        return this;
+    };
 
     // Private functions
     function log(message) {
@@ -132,8 +174,10 @@ js2r = (function () {
         }
     }
 
-    function buildRegex(patternObject, maxOrder) {
-        var pattern = "";
+    function buildRegex(conditions) {
+        var patternObject = conditions.pattern,
+            maxOrder = conditions.orderCounter,
+            pattern = "";
 
         pattern += buildStartsWithString(patternObject, maxOrder);
 
@@ -145,7 +189,21 @@ js2r = (function () {
         pattern += buildEndsWithString(patternObject);
 
         log("buildRegex call generated the pattern: " + pattern);
-        return new RegExp(pattern);
+        return new RegExp(pattern, buildFlagsString(conditions));
+    }
+    
+    function buildFlagsString(patternObject) {
+        var result = "";        
+        if (patternObject.global) {
+            result += "g";
+        }
+        if (patternObject.ignoreCase) {
+            result += "i";
+        }
+        if (patternObject.multiline) {
+            result += "m";
+        }
+        return result || undefined;
     }
 
     function buildStartsWithString(patternObject) {
@@ -215,7 +273,7 @@ js2r = (function () {
         }).shift();
         if (currentIsCondition) {
             log("currentIsCondition: " + JSON.stringify(currentIsCondition));
-            return regexEscape(currentIsCondition.pattern);
+            return currentIsCondition.pattern;
         } else {
             return "";
         }
