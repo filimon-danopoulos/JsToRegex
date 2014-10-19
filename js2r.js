@@ -1,4 +1,5 @@
-var js2r = (function () {
+var js2r;
+js2r = (function () {
     var expressions = {};
 
 
@@ -18,7 +19,7 @@ var js2r = (function () {
         return newInstance;
     };
 
-    JsToRegex.DEBUG = true;
+    JsToRegex.DEBUG = false;
     JsToRegex.ANY = ".*";
 
 
@@ -43,6 +44,10 @@ var js2r = (function () {
         } else {
             return result.slice(1);
         }
+    };
+
+    JsToRegex.prototype.compile = function () {
+        return buildRegex(expressions[this.guid].pattern, expressions[this.guid].orderCounter);
     };
 
     JsToRegex.prototype.startsWith = function (patternString) {
@@ -116,7 +121,7 @@ var js2r = (function () {
         return this;
     };
 
-    JsToRegex.prototype.or = function(patternString) {
+    JsToRegex.prototype.or = function (patternString) {
         return this[expressions[this.guid].previousCall].call(this, patternString);
     };
 
@@ -217,19 +222,10 @@ var js2r = (function () {
     }
 
     function regexEscape(patternString) {
-        console.warn("regexEscape is only mocked, it needs to be implemented!");
-        return patternString;
+        return patternString.replace(/[-[\]{}()*+?.\\^$|#]/g, "\\$&");
     }
 
     return JsToRegex;
 })();
 
-
-js2r.DEBUG = true;
-
-var x = js2r.create("efilimont")
-    .endsWith("s")
-    .or("t")
-    .getMatch();
-
-alert(x);
+module.exports.js2r = js2r;
