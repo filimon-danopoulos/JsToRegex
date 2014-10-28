@@ -1,10 +1,10 @@
 var assert = require("assert");
 
-describe('JsToRegex', function(){
+describe('JsToRegex', function() {
     var js2r = require("../js2r").js2r;
-        
-    describe('create()', function(){
-        it('should return a new instance', function(){
+
+    describe('create()', function() {
+        it('should return a new instance', function() {
             assert(js2r.create() instanceof js2r);
         });
     });
@@ -13,10 +13,10 @@ describe('JsToRegex', function(){
             assert(js2r.ANY === ".*");
         });
     });
-    
+
     describe('prototype', function() {
         describe('compile()', function() {
-            it ('should return the compiled regular expression', function() {
+            it('should return the compiled regular expression', function() {
                 assert(js2r.create().match(js2r.ANY).compile().toString() === "/(.*)/");
             });
         });
@@ -53,24 +53,24 @@ describe('JsToRegex', function(){
             it('should result in "^a" when once called with "a"', function() {
                 var expected = '/^a/',
                     result = js2r.create().startsWith("a").compile().toString();
-                assert(result === expected,  expected+" === "+result);
+                assert(result === expected, expected + " === " + result);
             });
             it('should result in "^[a|b]" when called first with "a" then with "b"', function() {
                 var expected = '/^[a|b]/',
                     result = js2r.create().startsWith("a").startsWith("b").compile().toString();
-                assert(result === expected,  expected+" === "+result);
+                assert(result === expected, expected + " === " + result);
             });
             it('should result in "^[p1|...|pn]" when called multiple times', function() {
                 var expected = '/^[a',
                     result = js2r.create().startsWith("a");
-                    
-                for (var i = 0; i < Math.floor(Math.random()*20); i++) {
-                    expected += '|a'; 
+
+                for (var i = 0; i < Math.ceil(Math.random() * 100); i++) {
+                    expected += '|a';
                     result.startsWith("a");
                 }
                 expected += ']/';
                 result = result.compile().toString();
-                assert(result === expected,  expected+" === "+result);                
+                assert(result === expected, expected + " === " + result);
             });
             it('should throw an exception when it\'s not the first condition', function() {
                 var threw = false;
@@ -79,7 +79,7 @@ describe('JsToRegex', function(){
                 } catch (ex) {
                     threw = true;
                 } finally {
-                    assert(threw);  
+                    assert(threw);
                 }
             });
             it('should throw an exception when mulitple calls are interupted by other conditions', function() {
@@ -89,7 +89,7 @@ describe('JsToRegex', function(){
                 } catch (ex) {
                     threw = true;
                 } finally {
-                    assert(threw);  
+                    assert(threw);
                 }
             });
         });
@@ -106,24 +106,24 @@ describe('JsToRegex', function(){
             it('should result in "a$" if it is called with "a"', function() {
                 var expected = "/a$/",
                     result = js2r.create().endsWith("a").compile().toString();
-                assert(result === expected,  expected+" === "+result);
-            });          
+                assert(result === expected, expected + " === " + result);
+            });
             it('should result in "[a|b]$" when called first with "a" then with "b"', function() {
                 var expected = '/[a|b]$/',
                     result = js2r.create().endsWith("a").endsWith("b").compile().toString();
-                assert(result === expected,  expected+" === "+result);
-            });  
+                assert(result === expected, expected + " === " + result);
+            });
             it('should result in "[p1|...|pn]$" when called multiple times', function() {
                 var expected = '/[a',
-                    result = js2r.create().endsWith("a");                    
-                for (var i = 0; i < Math.floor(Math.random()*1000); i++) {
-                    expected += '|a'; 
+                    result = js2r.create().endsWith("a");
+                for (var i = 0; i < Math.floor(Math.random() * 1000); i++) {
+                    expected += '|a';
                     result.endsWith("a");
                 }
-                expected += ']$/';    
-                    
+                expected += ']$/';
+
                 result = result.compile().toString();
-                assert(result === expected,  expected+" === "+result);                
+                assert(result === expected, expected + " === " + result);
             });
             it('should throw an exception when multiple calls are interupted by other conditions', function() {
                 var threw = false;
@@ -132,7 +132,7 @@ describe('JsToRegex', function(){
                 } catch (ex) {
                     threw = true;
                 } finally {
-                    assert(threw);  
+                    assert(threw);
                 }
             });
         });
@@ -149,7 +149,7 @@ describe('JsToRegex', function(){
             it('should result in "(a)" when called with "a"', function() {
                 var expected = "/(a)/",
                     result = js2r.create().match("a").compile().toString();
-                assert(result === expected,  expected+" === "+result);
+                assert(result === expected, expected + " === " + result);
             });
         });
         describe('is()', function() {
@@ -165,7 +165,7 @@ describe('JsToRegex', function(){
             it('should result in "a" when called with "a"', function() {
                 var expected = "/a/",
                     result = js2r.create().is("a").compile().toString();
-                assert(result === expected,  expected+" === "+result);
+                assert(result === expected, expected + " === " + result);
             });
         });
         describe('flags()', function() {
@@ -226,25 +226,43 @@ describe('JsToRegex', function(){
             });
         });
         describe('or()', function() {
+            it('should throw when called without any parameters', function() {
+                var threw = false;
+                try {
+                    js2r.create().is("a").or();
+                } catch (ex) {
+                    threw = true;
+                }
+                assert(threw);
+            });
+            it('should throw when called after an un-supported condition', function() {
+                var threw = false;
+                try {
+                    js2r.create().or("a");
+                } catch (ex) {
+                    threw = true;
+                }
+                assert(threw);
+            });
             it('it should result in "^[a|b]" when called with "b" after ".startsWith(\"a\")"', function() {
                 var expected = "/^[a|b]/",
                     result = js2r.create().startsWith("a").or("b").compile().toString();
-                assert(result === expected,  expected+" === "+result);
+                assert(result === expected, expected + " === " + result);
             });
             it('it should result in "[a|b]$" when called with "b" after ".endsWith(\"a\")"', function() {
                 var expected = "/[a|b]$/",
                     result = js2r.create().endsWith("a").or("b").compile().toString();
-                assert(result === expected,  expected+" === "+result);
+                assert(result === expected, expected + " === " + result);
             });
             it('it should result in "[a|b]" when called with "b" after ".is(\"a\")"', function() {
                 var expected = "/[a|b]/",
                     result = js2r.create().is("a").or("b").compile().toString();
-                assert(result === expected, expected+" === "+result);
+                assert(result === expected, expected + " === " + result);
             });
             it('it should result in "([a|b])" when called with "b" after ".match(\"a\")"', function() {
                 var expected = "/([a|b])/",
                     result = js2r.create().match("a").or("b").compile().toString();
-                assert(result === expected,  expected+" === "+result);
+                assert(result === expected, expected + " === " + result);
             });
         });
     });

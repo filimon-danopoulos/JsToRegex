@@ -1,6 +1,7 @@
 var js2r;
-js2r = (function () {
-    var expressions = {};
+js2r = (function() {
+    var expressions = {},
+        validPreviousCalls = ["startsWith", "endsWith", "is", "match"];
 
 
     function JsToRegex() {
@@ -8,7 +9,7 @@ js2r = (function () {
     }
 
     // Static functions and constants
-    JsToRegex.create = function (testString) {
+    JsToRegex.create = function(testString) {
         var newInstance = new JsToRegex();
         expressions[newInstance.guid] = {
             orderCounter: 0,
@@ -32,7 +33,7 @@ js2r = (function () {
 
 
     // Public methods
-    JsToRegex.prototype.isMatch = function () {
+    JsToRegex.prototype.isMatch = function() {
         var regex = buildRegex(expressions[this.guid]),
             testString = expressions[this.guid].testString,
             result = regex.test(testString);
@@ -41,7 +42,7 @@ js2r = (function () {
         return result;
     };
 
-    JsToRegex.prototype.getMatch = function () {
+    JsToRegex.prototype.getMatch = function() {
         var regex = buildRegex(expressions[this.guid]),
             testString = expressions[this.guid].testString,
             result = regex.exec(testString);
@@ -54,11 +55,11 @@ js2r = (function () {
         }
     };
 
-    JsToRegex.prototype.compile = function () {
+    JsToRegex.prototype.compile = function() {
         return buildRegex(expressions[this.guid]);
     };
 
-    JsToRegex.prototype.startsWith = function (patternString) {
+    JsToRegex.prototype.startsWith = function(patternString) {
         if (!patternString) {
             throw "Argument missing: patternString";
         }
@@ -66,21 +67,11 @@ js2r = (function () {
         if (!expressions[this.guid].pattern.startsWith) {
             expressions[this.guid].pattern.startsWith = [];
         }
-
-        if (Object.keys(expressions[this.guid].pattern).filter(function (x) {
-            return x !== "startsWith";
-        }).shift()) {
-            throw "Invalid operation: startsWith can't be called after other conditions are defined";
-        }
-
-
-        expressions[this.guid].pattern.startsWith.push(patternString);
-        expressions[this.guid].previousCall = "startsWith";
-
+        startsWith(this.guid, patternString);
         return this;
     };
 
-    JsToRegex.prototype.endsWith = function (patternString) {
+    JsToRegex.prototype.endsWith = function(patternString) {
         if (!patternString) {
             throw "Argument missing: patternString";
         }
@@ -88,14 +79,11 @@ js2r = (function () {
         if (!expressions[this.guid].pattern.endsWith) {
             expressions[this.guid].pattern.endsWith = [];
         }
-
-        expressions[this.guid].pattern.endsWith.push(patternString);
-        expressions[this.guid].previousCall = "endsWith";
-
+        endsWith(this.guid, patternString);
         return this;
     };
 
-    JsToRegex.prototype.match = function (patternString) {
+    JsToRegex.prototype.match = function(patternString) {
         if (!patternString) {
             throw "Argument missing: patternString";
         }
@@ -103,16 +91,11 @@ js2r = (function () {
         if (!expressions[this.guid].pattern.match) {
             expressions[this.guid].pattern.match = [];
         }
-
-        expressions[this.guid].pattern.match.push({
-            order: expressions[this.guid].orderCounter++,
-            pattern: patternString
-        });
-        expressions[this.guid].previousCall = "match";
+        match(this.guid, patternString, false);
         return this;
     };
 
-    JsToRegex.prototype.is = function (patternString) {
+    JsToRegex.prototype.is = function(patternString) {
         if (!patternString) {
             throw "Argument missing: patternString";
         }
@@ -120,53 +103,54 @@ js2r = (function () {
         if (!expressions[this.guid].pattern.is) {
             expressions[this.guid].pattern.is = [];
         }
-
-        expressions[this.guid].pattern.is.push({
-            order: expressions[this.guid].orderCounter++,
-            pattern: patternString
-        });
-        expressions[this.guid].previousCall = "is";
+        is(this.guid, patternString, false);
         return this;
     };
 
-    JsToRegex.prototype.or = function (patternString) {
-        return this[expressions[this.guid].previousCall].call(this, patternString);
+    JsToRegex.prototype.or = function(patternString) {
+        if (!patternString) {
+            throw "Invalid argument: patternString";
+        }
+        if (validPreviousCalls.indexOf(expressions[this.guid].previousCall) === -1) {
+            throw "Invalid operation: Can't call \"or\" after an invalid condition.";
+        }
+        return this[expressions[this.guid].previousCall].call(this, patternString, true);
     };
-    
-    JsToRegex.prototype.flags = function (flags) {
+
+    JsToRegex.prototype.flags = function(flags) {
         if (!flags) {
             throw "Argument missing: flags";
         }
         switch (flags) {
-            case 2: 
-                expressions[this.guid].global = true; 
+            case 2:
+                expressions[this.guid].global = true;
                 break;
-            case 4: 
-                expressions[this.guid].ignoreCase = true; 
+            case 4:
+                expressions[this.guid].ignoreCase = true;
                 break;
-            case 6: 
-                expressions[this.guid].global = true; 
-                expressions[this.guid].ignoreCase = true; 
+            case 6:
+                expressions[this.guid].global = true;
+                expressions[this.guid].ignoreCase = true;
                 break;
             case 8:
                 expressions[this.guid].multiline = true;
                 break;
             case 10:
-                expressions[this.guid].global = true; 
+                expressions[this.guid].global = true;
                 expressions[this.guid].multiline = true;
                 break;
             case 12:
-                expressions[this.guid].ignoreCase = true; 
+                expressions[this.guid].ignoreCase = true;
                 expressions[this.guid].multiline = true;
                 break;
             case 14:
-                expressions[this.guid].global = true; 
-                expressions[this.guid].ignoreCase = true; 
+                expressions[this.guid].global = true;
+                expressions[this.guid].ignoreCase = true;
                 expressions[this.guid].multiline = true;
                 break;
             default:
                 throw "Invalid flag option: " + flags;
-        }    
+        }
         return this;
     };
 
@@ -194,9 +178,9 @@ js2r = (function () {
         log("buildRegex call generated the pattern: " + pattern);
         return new RegExp(pattern, buildFlagsString(conditions));
     }
-    
+
     function buildFlagsString(patternObject) {
-        var result = "";        
+        var result = "";
         if (patternObject.global) {
             result += "g";
         }
@@ -249,7 +233,7 @@ js2r = (function () {
 
         log("buildMatchString called with order: " + order);
         var allMatchConditions = patternObject.match || [];
-        var currentMatchCondition = allMatchConditions.filter(function (x) {
+        var currentMatchCondition = allMatchConditions.filter(function(x) {
             return x.order === order;
         }).shift();
 
@@ -271,7 +255,7 @@ js2r = (function () {
 
         log("buildIsString called with order: " + order);
         var allIsConditions = patternObject.is || [];
-        var currentIsCondition = allIsConditions.filter(function (x) {
+        var currentIsCondition = allIsConditions.filter(function(x) {
             return x.order === order;
         }).shift();
         if (currentIsCondition) {
@@ -284,6 +268,38 @@ js2r = (function () {
 
     function regexEscape(patternString) {
         return patternString.replace(/[-[\]{}()*+?.\\^$|#]/g, "\\$&");
+    }
+    
+    function startsWith(guid, patternString) {
+        if (Object.keys(expressions[guid].pattern).filter(function(x) {
+                return x !== "startsWith";
+            }).shift()) {
+            throw "Invalid operation: startsWith can't be called after other conditions are defined";
+        }
+
+        expressions[guid].pattern.startsWith.push(patternString);
+        expressions[guid].previousCall = "startsWith";
+    }
+    
+    function endsWith(guid, patternString) {
+        expressions[guid].pattern.endsWith.push(patternString);
+        expressions[guid].previousCall = "endsWith";
+    }
+    
+    function match(guid, patternString, calledFromOr) {    
+        expressions[guid].pattern.match.push({
+            order: expressions[guid].orderCounter++,
+            pattern: patternString
+        });
+        expressions[guid].previousCall = "match";
+    }
+    
+    function is(guid, patternString, calledFromOr) {
+        expressions[guid].pattern.is.push({
+            order: expressions[guid].orderCounter++,
+            pattern: patternString
+        });
+        expressions[guid].previousCall = "is";
     }
 
     return JsToRegex;
