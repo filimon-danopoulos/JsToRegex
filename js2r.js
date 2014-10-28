@@ -44,12 +44,12 @@ js2r = (function () {
     JsToRegex.prototype.getMatch = function () {
         var regex = buildRegex(expressions[this.guid]),
             testString = expressions[this.guid].testString,
-            result = regex.exec(testString) || [];
+            result = regex.exec(testString);
         log("getMatch is called with the test string: " + testString);
-        log("Result of getMatch call has length: " + result.length);
         if (!result) {
             return [];
         } else {
+            log("Result of getMatch call has length: " + result.length);
             return result.slice(1);
         }
     };
@@ -134,6 +134,9 @@ js2r = (function () {
     };
     
     JsToRegex.prototype.flags = function (flags) {
+        if (!flags) {
+            throw "Argument missing: flags";
+        }
         switch (flags) {
             case 2: 
                 expressions[this.guid].global = true; 
