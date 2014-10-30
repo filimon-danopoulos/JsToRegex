@@ -1,7 +1,7 @@
 var assert = require("assert");
 
 describe('JsToRegex', function() {
-    var js2r = require("../js2r").js2r;
+    var js2r = require("../JsToRegex");
 
     describe('create()', function() {
         it('should return a new instance', function() {
