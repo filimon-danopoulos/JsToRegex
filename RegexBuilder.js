@@ -35,22 +35,28 @@ RegexBuilder = (function() {
     };
 
     RegexBuilder.prototype.buildStartsWithString = function(patternObject) {
-        if (!patternObject) {
+        if (typeof patternObject === "undefined") {
             throw "Argument missing: patternObject";
         }
-        var parts = patternObject.startsWith || [];
+        if (typeof patternObject.startsWith == "undefined") {
+            return "";
+        }
+        
+        var parts = patternObject.startsWith;
         switch (parts.length) {
             case 0:
                 return "";
             case 1:
-                return "^" + this.regexEscape(parts[0]);
+                return "^" + this.regexEscape(parts[0].pattern);
             default:
-                return "^[" + parts.map(this.regexEscape).join('|') + "]";
+                return "^[" + parts.map(function(x) { 
+                    return this.regexEscape(x.pattern);
+                }, this).join('|') + "]";
         }
     };
 
     RegexBuilder.prototype.buildEndsWithString = function(patternObject) {
-        if (!patternObject) {
+        if (typeof patternObject === "undefined") {
             throw "Argument missing: patternObject";
         }
         var parts = patternObject.endsWith || [];
@@ -65,14 +71,17 @@ RegexBuilder = (function() {
     };
 
     RegexBuilder.prototype.buildMatchString = function(patternObject, order) {
-        if (!patternObject) {
+        if (typeof patternObject === "undefined") {
             throw "Argument missing: patternObject";
         }
         if (typeof order === "undefined") {
             throw "Argument missing: order";
         }
-
-        var allMatchConditions = patternObject.match || [];
+        if (typeof patternObject.match === "undefined") {
+            return "";
+        }
+        
+        var allMatchConditions = patternObject.match;
         var currentMatchCondition = allMatchConditions.filter(function(x) {
             return x.order === order;
         }).shift();
@@ -85,14 +94,17 @@ RegexBuilder = (function() {
     };
 
     RegexBuilder.prototype.buildIsString = function(patternObject, order) {
-        if (!patternObject) {
+        if (typeof patternObject === "undefined") {
             throw "Argument missing: patternObject";
         }
         if (typeof order === "undefined") {
             throw "Argument missing: order";
         }
+        if (typeof patternObject.is === "undefined") {
+            return "";
+        }
 
-        var allIsConditions = patternObject.is || [];
+        var allIsConditions = patternObject.is;
         var currentIsCondition = allIsConditions.filter(function(x) {
             return x.order === order;
         }).map(function(x) {
@@ -110,6 +122,9 @@ RegexBuilder = (function() {
     };
     
     RegexBuilder.prototype.regexEscape = function(patternString) {
+        if (typeof patternString === "undefined") {
+            throw "Argument missing: patternObject";
+        }
         return patternString.replace(/[-[\]{}()*+?.\\^$|#]/g, "\\$&");
     };
     

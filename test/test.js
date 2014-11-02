@@ -50,27 +50,35 @@ describe('JsToRegex', function() {
                 }
                 assert(threw);
             });
-            it('should result in "^a" when once called with "a"', function() {
-                var expected = '/^a/',
-                    result = js2r.create().startsWith("a").compile().toString();
-                assert(result === expected, expected + " === " + result);
+            it('should add a "startsWith" entry when called with "a"', function() {
+                var result = js2r.create().startsWith("a").getConditions();
+                assert(result.startsWith);
+                assert(result.startsWith.length === 1);
+                assert(result.startsWith[0].pattern);
+                assert(result.startsWith[0].pattern === "a");
             });
-            it('should result in "^[a|b]" when called first with "a" then with "b"', function() {
-                var expected = '/^[a|b]/',
-                    result = js2r.create().startsWith("a").startsWith("b").compile().toString();
-                assert(result === expected, expected + " === " + result);
-            });
-            it('should result in "^[p1|...|pn]" when called multiple times', function() {
-                var expected = '/^[a',
-                    result = js2r.create().startsWith("a");
+            it('should add two "startsWith" entries when called with "a" then with "b"', function() {
+                var result = js2r.create().startsWith("a").startsWith("b").getConditions();
+                assert(result.startsWith);
+                assert(result.startsWith.length === 2);
+                assert(result.startsWith[0].pattern === "a");
+                assert(result.startsWith[1].pattern === "b");
 
-                for (var i = 0; i < Math.ceil(Math.random() * 100); i++) {
-                    expected += '|a';
+            });
+            it('should add N "startsWith" entries when called with "a" N times', function() {
+                var result = js2r.create(),
+                    iMax = Math.ceil(Math.random() * 100);
+                for (var i = 0; i < iMax; i++) {
                     result.startsWith("a");
                 }
-                expected += ']/';
-                result = result.compile().toString();
-                assert(result === expected, expected + " === " + result);
+                result = result.getConditions();
+                assert(result.startsWith);
+                assert(result.startsWith.length === iMax);
+                
+                for (var i = 0; i < iMax; i++) {
+                    assert(result.startsWith[i].pattern === "a");
+                }
+                
             });
             it('should throw an exception when it\'s not the first condition', function() {
                 var threw = false;
@@ -103,27 +111,31 @@ describe('JsToRegex', function() {
                 }
                 assert(threw);
             });
-            it('should result in "a$" if it is called with "a"', function() {
-                var expected = "/a$/",
-                    result = js2r.create().endsWith("a").compile().toString();
-                assert(result === expected, expected + " === " + result);
+            it('should add a "endsWith" entry when called with "a"', function() {
+                var result = js2r.create().endsWith("a").getConditions();
+                assert(result.endsWith);
+                assert(result.endsWith.length === 1);
+                assert(result.endsWith[0] === "a");
             });
-            it('should result in "[a|b]$" when called first with "a" then with "b"', function() {
-                var expected = '/[a|b]$/',
-                    result = js2r.create().endsWith("a").endsWith("b").compile().toString();
-                assert(result === expected, expected + " === " + result);
+            it('should add two "endsWith" entries when called with "a" then with "b"', function() {
+                var result = js2r.create().endsWith("a").endsWith("b").getConditions();
+                assert(result.endsWith);
+                assert(result.endsWith.length === 2);
+                assert(result.endsWith[0] === "a");
+                assert(result.endsWith[1] === "b");
             });
-            it('should result in "[p1|...|pn]$" when called multiple times', function() {
-                var expected = '/[a',
-                    result = js2r.create().endsWith("a");
-                for (var i = 0; i < Math.floor(Math.random() * 1000); i++) {
-                    expected += '|a';
+            it('should add N "endsWith" entries when called N times', function() {
+                var result = js2r.create(),
+                    iMax = Math.floor(Math.random() * 100);
+                for (var i = 0; i < iMax; i++) {
                     result.endsWith("a");
                 }
-                expected += ']$/';
-
-                result = result.compile().toString();
-                assert(result === expected, expected + " === " + result);
+                result = result.getConditions();
+                assert(result.endsWith);
+                assert(result.endsWith.length === iMax);
+                for (var i = 0; i < iMax; i++) {
+                    assert(result.endsWith[i] === "a");
+                }
             });
             it('should throw an exception when multiple calls are interupted by other conditions', function() {
                 var threw = false;
@@ -146,10 +158,11 @@ describe('JsToRegex', function() {
                 }
                 assert(threw);
             });
-            it('should result in "(a)" when called with "a"', function() {
-                var expected = "/(a)/",
-                    result = js2r.create().match("a").compile().toString();
-                assert(result === expected, expected + " === " + result);
+            it('should add a "match" entry when called with "a"', function() {
+                var result = js2r.create().match("a").getConditions();
+                assert(result.match);
+                assert(result.match.length === 1);
+                assert(result.match[0].pattern === "a");
             });
         });
         describe('is()', function() {
@@ -162,10 +175,11 @@ describe('JsToRegex', function() {
                 }
                 assert(threw);
             });
-            it('should result in "a" when called with "a"', function() {
-                var expected = "/a/",
-                    result = js2r.create().is("a").compile().toString();
-                assert(result === expected, expected + " === " + result);
+            it('should add an "is" entry when called with "a"', function() {
+                var result = js2r.create().is("a").getConditions();
+                assert(result.is);
+                assert(result.is.length === 1);
+                assert(result.is[0].pattern === "a");
             });
         });
         describe('flags()', function() {
@@ -244,26 +258,254 @@ describe('JsToRegex', function() {
                 }
                 assert(threw);
             });
-            it('it should result in "^[a|b]" when called with "b" after ".startsWith(\"a\")"', function() {
-                var expected = "/^[a|b]/",
-                    result = js2r.create().startsWith("a").or("b").compile().toString();
-                assert(result === expected, expected + " === " + result);
+            it('it should add two "startsWith" entries when called with "b" after ".startsWith(\"a\")"', function() {
+                var result = js2r.create().startsWith("a").or("b").getConditions();
+                assert(result.startsWith);
+                assert(result.startsWith.length === 2);
+                assert(result.startsWith[0].pattern === "a");
+                assert(result.startsWith[1].pattern === "b");
             });
-            it('it should result in "[a|b]$" when called with "b" after ".endsWith(\"a\")"', function() {
-                var expected = "/[a|b]$/",
-                    result = js2r.create().endsWith("a").or("b").compile().toString();
-                assert(result === expected, expected + " === " + result);
+            it('it should add two "endsWith" entries when called with "b" after ".endsWith(\"a\")"', function() {
+                var result = js2r.create().endsWith("a").or("b").getConditions();
+                assert(result.endsWith);
+                assert(result.endsWith.length === 2);
+                assert(result.endsWith[0] === "a");
+                assert(result.endsWith[1] === "b");
             });
-            it('it should result in "[a|b]" when called with "b" after ".is(\"a\")"', function() {
-                var expected = "/[a|b]/",
-                    result = js2r.create().is("a").or("b").compile().toString();
-                assert(result === expected, expected + " === " + result);
+            it('it should add two "is" entries when called with "b" after ".is(\"a\")"', function() {
+                var result = js2r.create().is("a").or("b").getConditions();
+                assert(result.is);
+                assert(result.is.length === 2);
+                assert(result.is[0].pattern === "a");
+                assert(result.is[1].pattern === "b");
             });
-            it('it should result in "([a|b])" when called with "b" after ".match(\"a\")"', function() {
-                var expected = "/([a|b])/",
-                    result = js2r.create().match("a").or("b").compile().toString();
-                assert(result === expected, expected + " === " + result);
+            it('it should add two "match" entries when called with "b" after ".match(\"a\")"', function() {
+                var result = js2r.create().match("a").or("b").getConditions();
+                assert(result.match);
+                assert(result.match.length === 2);
+                assert(result.match[0].pattern === "a");
+                assert(result.match[1].pattern === "b");
             });
         });
     });
 });
+
+describe('RegexBuilder', function() {
+    var RegexBuilder = require("../RegexBuilder"),
+        builder = new RegexBuilder();
+        
+    describe('protype', function() {
+        describe('buildRegex', function() {
+            it('should compile a JsToRegex object to a regex');
+        });
+        describe('buildFlagsString', function() {
+            it('should return a string representing flag');
+        });
+        describe('buildStartsWithString', function() {
+            it('should throw an exception when called without any parameters', function() {
+                var threw = false;
+                try {
+                    builder.buildStartsWithString();
+                } catch (ex) {
+                    threw = true;
+                }
+                assert(threw);
+            });
+            it('should return an empty string when no "beginsWith" condition is supplied', function() {
+                var expected = "", 
+                    input  = { }, 
+                    result = builder.buildStartsWithString(input, 0);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should retrun "^a" for an object with a single startsWith condition', function() {
+                var expected = "^a",
+                    input = {
+                        startsWith: [{pattern: "a"}]
+                    },
+                    result = builder.buildStartsWithString(input);
+                assert(result === expected, '"' + result + '" === "' + expected + '"');
+            });
+            it('should return "^[a|b]" for an object with multiple "startsWith" conditions', function() {
+                var expected = "^[a|b]",
+                    input = {
+                        startsWith: [{
+                            pattern: "a"
+                        }, {
+                            pattern: "b"
+                        }]
+                    },
+                    result = builder.buildStartsWithString(input);
+                assert(result === expected, '"' + result + '" === "' + expected + '"');
+            });
+        });
+        describe('buildEndsWithString', function() {
+            it('should throw an exception when called without any parameters', function() {
+                var threw = false;
+                try {
+                    builder.buildEndsWithString();
+                } catch (ex) {
+                    threw = true;
+                }
+                assert(threw);
+            });
+            it('should return an empty string when no "endsWith" condition is supplied', function() {
+                var expected = "", 
+                    input  = { }, 
+                    result = builder.buildEndsWithString(input, 0);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+        });
+        describe('buildMatchString', function() {
+            it('should throw an exception when called without any parameters', function() {
+                var threw = false;
+                try {
+                    builder.buildMatchString();
+                } catch (ex) {
+                    threw = true;
+                }
+                assert(threw);
+            });
+            it('should throw an exception when called without an order pattern', function() {
+                var threw = false;
+                try {
+                    builder.buildMatchString("a");
+                } catch (ex) {
+                    threw = true;
+                }
+                assert(threw);
+            });
+            it('should return an empty string when no "match" condition is supplied', function() {
+                var expected = "", 
+                    input  = { }, 
+                    result = builder.buildMatchString(input, 0);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+        });
+        describe('buildIsString', function() {
+            it('should throw an exception when called without any parameters', function() {
+                var threw = false;
+                try {
+                    builder.buildIsString();
+                } catch (ex) {
+                    threw = true;
+                }
+                assert(threw);
+            });
+            it('should throw an exception when called without an order pattern', function() {
+                var threw = false;
+                try {
+                    builder.buildIsString("a");
+                } catch (ex) {
+                    threw = true;
+                }
+                assert(threw);
+            });
+            it('should return an empty string when no "is" condition is supplied', function() {
+                var expected = "", 
+                    input  = { }, 
+                    result = builder.buildIsString(input, 0);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should return a string representing an "is" pattern for a single "is" condition.', function() {
+                var expected = "a", 
+                    input  = { is: [{ order: 0,pattern: "a" }] }, 
+                    result = builder.buildIsString(input, 0);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should return a string representing an "is" pattern for multiple "is" conditions.', function() {
+                var expected, input, result;
+                expected = "[a|b|c]";
+                input = { is: [{ order: 0, pattern: "a" },  { order: 0, pattern: "b" },  { order: 0, pattern: "c"}] };
+                result = builder.buildIsString(input, 0);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+        });
+        describe('regexEscape', function() {
+            it('should throw an exception when called without a parameter', function() {
+                var threw = false;
+                try {
+                    builder.regexEscape();
+                } catch (ex) {
+                    threw = true;
+                }
+                assert(threw);
+            });
+            it('should escape "-" to "\\-"', function() {
+                var expected = "\\-",
+                result = builder.regexEscape("-");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should escape "[" to "\\["', function() {
+                var expected = "\\[",
+                result = builder.regexEscape("[");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should escape "{" to "\\{"', function() {
+                var expected = "\\{",
+                result = builder.regexEscape("{");
+                assert(result === expected, expected + " ==.= " + result);
+            });
+            it('should escape "}" to "\\}"', function() {
+                var expected = "\\}",
+                result = builder.regexEscape("}");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should escape "(" to "\\("', function() {
+                var expected = "\\(",
+                result = builder.regexEscape("(");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should escape ")" to "\\)"', function() {
+                var expected = "\\)",
+                result = builder.regexEscape(")");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should escape "*" to "\\*"', function() {
+                var expected = "\\*",
+                result = builder.regexEscape("*");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should escape "+" to "\\+"', function() {
+                var expected = "\\+",
+                result = builder.regexEscape("+");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should escape "?" to "\\?"', function() {
+                var expected = "\\?",
+                result = builder.regexEscape("?");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should escape "." to "\\."', function() {
+                var expected = "\\.",
+                result = builder.regexEscape(".");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should escape "\\" to "\\\\"', function() {
+                var expected = "\\\\",
+                    result = builder.regexEscape("\\");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');                
+            });
+            it('should escape "^" to "\\^"', function() {
+                var expected = "\\^",
+                    result = builder.regexEscape("^");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should escape "$" to "\\$"', function() {
+                var expected = "\\$",
+                result = builder.regexEscape("$");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should escape "|" to "\\|"', function() {
+                var expected = "\\|",
+                result = builder.regexEscape("|");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should escape "#" to "\\#"', function() {
+                var expected = "\\#",
+                result = builder.regexEscape("#");
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+        });
+    });
+});
+
