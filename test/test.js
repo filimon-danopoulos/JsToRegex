@@ -27,6 +27,8 @@ describe('JsToRegex', function() {
             });
             it('should return false for an invalid match', function() {
                 assert(!js2r.create("test").startsWith("a").isMatch());
+                assert(!js2r.create("test").is("a").isMatch());
+                assert(!js2r.create("test").endsWith("a").isMatch());
             });
             it('should return true when a string starts with a value passed to a "startsWith" call', function() {
                 assert(js2r.create("test on thing string").startsWith("test").isMatch());
