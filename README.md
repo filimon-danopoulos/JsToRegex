@@ -1,8 +1,8 @@
-JsToRegex - a fluent regular expression JavaScript framework
+JsToRegex - a fluent API for regex
 =========
 
-Regular expressions are hard to read and hard to write, JS on the other hand is easy!
-
+Regular expressions are hard to read and hard to write, JS on the other hand is easy so I decided to write a fluent API for regular expressions.
+This is still in development so almost everything is guarantied to break!
 
 
 # Getting started with development
@@ -39,7 +39,7 @@ Keep in mind:
 * All public methods have to be tested.
 * The unit tests should be written first.
 
-The code coverage tool will catch any cheaters!
+The code coverage tool will catch any cheaters! At the time of writing there is no real reason for not having 100% test coverage.
 
 ### Testing
 
