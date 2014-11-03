@@ -9,7 +9,7 @@ RegexBuilder = (function() {
     
     RegexBuilder.prototype.buildRegex = function(conditions) {
         var patternObject = conditions.pattern,
-            maxOrder = conditions.orderCounter,
+            maxOrder = conditions.orderCounter+1,
             pattern = "";
 
         pattern += this.buildStartsWithString(patternObject, maxOrder);
@@ -140,7 +140,7 @@ RegexBuilder = (function() {
         if (typeof order === "undefined") {
             throw new Errors.ArgumentMissing("order");
         }
-        if (typeof patternObject.is === "undefined") {
+        if (typeof patternObject.isAny === "undefined") {
             return "";
         }
         var currentIsAnyCondition = patternObject.isAny.filter(function(x) {

@@ -18,7 +18,8 @@ describe('JsToRegex', function() {
     describe('prototype', function() {
         describe('compile()', function() {
             it('should return the compiled regular expression', function() {
-                assert(js2r.create().match(js2r.ANY).compile().toString() === "/(.*)/");
+                var result = js2r.create().match(js2r.ANY).compile().toString();
+                assert(result === "/(.*)/");
             });
         });
         describe('isMatch()', function() {
@@ -327,7 +328,7 @@ describe('JsToRegex', function() {
                 assert(result.is[0].pattern === "a");
                 assert(result.is[0].order === 0);
                 assert(result.is[1].pattern === "b");
-                assert(result.is[1].order === 1);
+                assert(result.is[1].order === 0);
             });
             it('should add two "isAny" entries when called with "b" after ".isAny("a")"', function() {
                 var result = js2r.create().isAny("a").or("b").getConditions();
@@ -336,7 +337,7 @@ describe('JsToRegex', function() {
                 assert(result.isAny[0].pattern === "a");
                 assert(result.isAny[0].order === 0);
                 assert(result.isAny[1].pattern === "b");
-                assert(result.isAny[1].order === 1);
+                assert(result.isAny[1].order === 0);
             });
             it('should add two "match" entries when called with "b" after ".match(\"a\")"', function() {
                 var result = js2r.create().match("a").or("b").getConditions();
@@ -345,7 +346,7 @@ describe('JsToRegex', function() {
                 assert(result.match[0].pattern === "a");
                 assert(result.match[0].order === 0);
                 assert(result.match[1].pattern === "b");
-                assert(result.match[1].order === 1);
+                assert(result.match[1].order === 0);
             });
         });
     });
@@ -563,8 +564,16 @@ describe('RegexBuilder', function() {
                     result = builder.buildIsAnyString(input, 0);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });
-            it('should return [abc] for a single "isAny" condition with the value "abc"', function() {
+            it('should return an empty string when an empty array is supplied as the "isAny" condition', function() {
                 var expected = "", 
+                    input  = { 
+                        isAny: []
+                    }, 
+                    result = builder.buildIsAnyString(input, 0);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should return [abc] for a single "isAny" condition with the value "abc"', function() {
+                var expected = "[abc]", 
                     input  = { 
                         isAny: [{
                             pattern: "abc",
@@ -575,7 +584,7 @@ describe('RegexBuilder', function() {
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });
             it('should return [abcdef] for two "isAny" conditions with the values "abc" and "def" and the same order', function() {
-                var expected = "", 
+                var expected = "[abcdef]", 
                     input  = { 
                         isAny: [{
                             pattern: "abc",

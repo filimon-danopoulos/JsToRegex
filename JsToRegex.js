@@ -17,7 +17,7 @@ JsToRegex = (function() {
     JsToRegex.create = function(testString) {
         var newInstance = new JsToRegex();
         expressions[newInstance.guid] = {
-            orderCounter: 0,
+            orderCounter: -1,
             testString: testString,
             pattern: {
                 startsWith: [],
@@ -114,6 +114,7 @@ JsToRegex = (function() {
             case "endsWith": endsWith(this.guid, patternString); break;
             case "match": match(this.guid, patternString, true); break;
             case "is": is(this.guid, patternString, true); break;
+            case "isAny": isAny(this.guid, patternString, true); break;
             default: throw new Errors.InvalidOperation("Can't call \"or\" after an invalid condition.");
         }
         return this;
@@ -181,32 +182,35 @@ JsToRegex = (function() {
     }
     
     function match(guid, patternString, calledFromOr) {  
+        if (!calledFromOr) {
+            ++expressions[guid].orderCounter;
+        }
         expressions[guid].pattern.match.push({
-            order: expressions[guid].orderCounter++,
+            order: expressions[guid].orderCounter,
             pattern: patternString
         });
         expressions[guid].previousCall = "match";
     }
     
     function is(guid, patternString, calledFromOr) {
+        if (!calledFromOr) {
+            ++expressions[guid].orderCounter;
+        }
         expressions[guid].pattern.is.push({
             order: expressions[guid].orderCounter,
             pattern: patternString
         });
-        if (!calledFromOr) {
-            ++expressions[guid].orderCounter;
-        }
         expressions[guid].previousCall = "is";
     }
     
     function isAny(guid, patternString, calledFromOr) {
+        if (!calledFromOr) {
+            ++expressions[guid].orderCounter;
+        }
         expressions[guid].pattern.isAny.push({
             order: expressions[guid].orderCounter,
             pattern: patternString
         });
-        if (!calledFromOr) {
-            ++expressions[guid].orderCounter;
-        }
         expressions[guid].previousCall = "isAny";
     };
     return JsToRegex;

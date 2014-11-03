@@ -199,16 +199,16 @@
     <h1>Code coverage report for <span class="entity">JsToRegex/RegexBuilder.js</span></h1>
     <h2>
         
-        Statements: <span class="metric">100% <small>(79 / 79)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Statements: <span class="metric">100% <small>(94 / 94)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
         
         
-        Branches: <span class="metric">100% <small>(44 / 44)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Branches: <span class="metric">100% <small>(54 / 54)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
         
         
-        Functions: <span class="metric">100% <small>(15 / 15)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Functions: <span class="metric">100% <small>(18 / 18)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
         
         
-        Lines: <span class="metric">100% <small>(79 / 79)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Lines: <span class="metric">100% <small>(94 / 94)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
         
         Ignored: <span class="metric"><span class="ignore-none">none</span></span> &nbsp;&nbsp;&nbsp;&nbsp;
     </h2>
@@ -361,7 +361,38 @@
 143
 144
 145
-146</td><td class="line-coverage"><span class="cline-any cline-yes">1</span>
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174</td><td class="line-coverage"><span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1</span>
 <span class="cline-any cline-yes">1</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -478,7 +509,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">17</span>
-<span class="cline-any cline-yes">17</span>
 <span class="cline-any cline-yes">20</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">16</span>
@@ -495,6 +525,32 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
 <span class="cline-any cline-yes">29</span>
 <span class="cline-any cline-yes">1</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -506,7 +562,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">var RegexBuilder;
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">var RegexBuilder, Errors;
+Errors = require("./Errors");
+&nbsp;
+&nbsp;
 RegexBuilder = (function() {
     function RegexBuilder() {
     
@@ -514,7 +573,7 @@ RegexBuilder = (function() {
     
     RegexBuilder.prototype.buildRegex = function(conditions) {
         var patternObject = conditions.pattern,
-            maxOrder = conditions.orderCounter,
+            maxOrder = conditions.orderCounter+1,
             pattern = "";
 &nbsp;
         pattern += this.buildStartsWithString(patternObject, maxOrder);
@@ -544,7 +603,7 @@ RegexBuilder = (function() {
 &nbsp;
     RegexBuilder.prototype.buildStartsWithString = function(patternObject) {
         if (typeof patternObject === "undefined") {
-            throw "Argument missing: patternObject";
+            throw new Errors.ArgumentMissing("patternObject");
         }
         if (typeof patternObject.startsWith == "undefined") {
             return "";
@@ -565,7 +624,7 @@ RegexBuilder = (function() {
 &nbsp;
     RegexBuilder.prototype.buildEndsWithString = function(patternObject) {
         if (typeof patternObject === "undefined") {
-            throw "Argument missing: patternObject";
+            throw new Errors.ArgumentMissing("patternObject");
         }
         if (typeof patternObject.endsWith === "undefined") {
             return "";
@@ -584,10 +643,10 @@ RegexBuilder = (function() {
 &nbsp;
     RegexBuilder.prototype.buildMatchString = function(patternObject, order) {
         if (typeof patternObject === "undefined") {
-            throw "Argument missing: patternObject";
+            throw new Errors.ArgumentMissing("patternObject");
         }
         if (typeof order === "undefined") {
-            throw "Argument missing: order";
+            throw new Errors.ArgumentMissing("order");
         }
         if (typeof patternObject.match === "undefined") {
             return "";
@@ -613,17 +672,16 @@ RegexBuilder = (function() {
 &nbsp;
     RegexBuilder.prototype.buildIsString = function(patternObject, order) {
         if (typeof patternObject === "undefined") {
-            throw "Argument missing: patternObject";
+            throw new Errors.ArgumentMissing("patternObject");
         }
         if (typeof order === "undefined") {
-            throw "Argument missing: order";
+            throw new Errors.ArgumentMissing("order");
         }
         if (typeof patternObject.is === "undefined") {
             return "";
         }
 &nbsp;
-        var allIsConditions = patternObject.is;
-        var currentIsCondition = allIsConditions.filter(function(x) {
+        var currentIsCondition = patternObject.is.filter(function(x) {
             return x.order === order;
         }).map(function(x) {
             return x.pattern;
@@ -639,9 +697,35 @@ RegexBuilder = (function() {
         }
     };
     
+    RegexBuilder.prototype.buildIsAnyString = function(patternObject, order) {
+        if (typeof patternObject === "undefined") {
+            throw new Errors.ArgumentMissing("patternObject");
+        }
+        if (typeof order === "undefined") {
+            throw new Errors.ArgumentMissing("order");
+        }
+        if (typeof patternObject.isAny === "undefined") {
+            return "";
+        }
+        var currentIsAnyCondition = patternObject.isAny.filter(function(x) {
+            return x.order === order;
+        }).map(function(x) {
+            return x.pattern;
+        });
+        if (currentIsAnyCondition.length) {
+            if (currentIsAnyCondition.length === 1) {
+                return "[" + currentIsAnyCondition.shift() + "]";
+            } else {
+                return "[" + currentIsAnyCondition.join('') + "]"
+            }
+        } else {
+            return "";
+        }
+    };
+    
     RegexBuilder.prototype.regexEscape = function(patternString) {
         if (typeof patternString === "undefined") {
-            throw "Argument missing: patternObject";
+            throw new Errors.ArgumentMissing("patternObject");
         }
         return patternString.replace(/[-[\]{}()*+?.\\^$|#]/g, "\\$&amp;");
     };
@@ -656,7 +740,7 @@ module.exports = RegexBuilder;
 
 </div>
 <div class="footer">
-    <div class="meta">Generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Nov 03 2014 19:13:49 GMT+0100 (CET)</div>
+    <div class="meta">Generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Nov 03 2014 22:16:10 GMT+0100 (CET)</div>
 </div>
 
 <script src="../prettify.js"></script>
