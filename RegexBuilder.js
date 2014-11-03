@@ -1,4 +1,7 @@
-var RegexBuilder;
+var RegexBuilder, Errors;
+Errors = require("./Errors");
+
+
 RegexBuilder = (function() {
     function RegexBuilder() {
     
@@ -36,7 +39,7 @@ RegexBuilder = (function() {
 
     RegexBuilder.prototype.buildStartsWithString = function(patternObject) {
         if (typeof patternObject === "undefined") {
-            throw "Argument missing: patternObject";
+            throw new Errors.ArgumentMissing("patternObject");
         }
         if (typeof patternObject.startsWith == "undefined") {
             return "";
@@ -57,7 +60,7 @@ RegexBuilder = (function() {
 
     RegexBuilder.prototype.buildEndsWithString = function(patternObject) {
         if (typeof patternObject === "undefined") {
-            throw "Argument missing: patternObject";
+            throw new Errors.ArgumentMissing("patternObject");
         }
         if (typeof patternObject.endsWith === "undefined") {
             return "";
@@ -76,10 +79,10 @@ RegexBuilder = (function() {
 
     RegexBuilder.prototype.buildMatchString = function(patternObject, order) {
         if (typeof patternObject === "undefined") {
-            throw "Argument missing: patternObject";
+            throw new Errors.ArgumentMissing("patternObject");
         }
         if (typeof order === "undefined") {
-            throw "Argument missing: order";
+            throw new Errors.ArgumentMissing("order");
         }
         if (typeof patternObject.match === "undefined") {
             return "";
@@ -105,10 +108,10 @@ RegexBuilder = (function() {
 
     RegexBuilder.prototype.buildIsString = function(patternObject, order) {
         if (typeof patternObject === "undefined") {
-            throw "Argument missing: patternObject";
+            throw new Errors.ArgumentMissing("patternObject");
         }
         if (typeof order === "undefined") {
-            throw "Argument missing: order";
+            throw new Errors.ArgumentMissing("order");
         }
         if (typeof patternObject.is === "undefined") {
             return "";
@@ -133,7 +136,7 @@ RegexBuilder = (function() {
     
     RegexBuilder.prototype.regexEscape = function(patternString) {
         if (typeof patternString === "undefined") {
-            throw "Argument missing: patternObject";
+            throw new Errors.ArgumentMissing("patternObject");
         }
         return patternString.replace(/[-[\]{}()*+?.\\^$|#]/g, "\\$&");
     };

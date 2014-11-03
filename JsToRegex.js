@@ -1,7 +1,9 @@
 var JsToRegex,
-    RegexBuilder;
+    RegexBuilder,
+    Errors;
 
 RegexBuilder = require("./RegexBuilder");    
+Errors = require("./Errors");
     
 JsToRegex = (function() {
     var expressions = {},
@@ -65,7 +67,7 @@ JsToRegex = (function() {
 
     JsToRegex.prototype.startsWith = function(patternString) {
         if (typeof patternString === "undefined") {
-            throw "Argument missing: patternString";
+            throw new Errors.ArgumentMissing("patternString");
         }
         startsWith(this.guid, patternString);
         return this;
@@ -73,7 +75,7 @@ JsToRegex = (function() {
 
     JsToRegex.prototype.endsWith = function(patternString) {
         if (typeof patternString === "undefined") {
-            throw "Argument missing: patternString";
+            throw new Errors.ArgumentMissing("patternString");
         }
         endsWith(this.guid, patternString);
         return this;
@@ -81,7 +83,7 @@ JsToRegex = (function() {
 
     JsToRegex.prototype.is = function(patternString) {
         if (typeof patternString === "undefined") {
-            throw "Argument missing: patternString";
+            throw new Errors.ArgumentMissing("patternString");
         }
         is(this.guid, patternString, false);
         return this;
@@ -89,7 +91,7 @@ JsToRegex = (function() {
     
     JsToRegex.prototype.isAny = function(patternString) {
         if (typeof patternString === "undefined") {
-            throw "Argument missing: patternString";
+            throw new Errors.ArgumentMissing("patternString");
         }
         isAny(this.guid, patternString, false);
         return this;
@@ -97,7 +99,7 @@ JsToRegex = (function() {
 
     JsToRegex.prototype.match = function(patternString) {
         if (typeof patternString === "undefined") {
-            throw "Argument missing: patternString";
+            throw new Errors.ArgumentMissing("patternString");
         }
         match(this.guid, patternString, false);
         return this;
@@ -105,21 +107,21 @@ JsToRegex = (function() {
 
     JsToRegex.prototype.or = function(patternString) {
         if (typeof patternString === "undefined") {
-            throw "Invalid argument: patternString";
+            throw new Errors.ArgumentMissing("patternString");
         }
         switch(expressions[this.guid].previousCall) {
             case "startsWith": startsWith(this.guid, patternString); break;
             case "endsWith": endsWith(this.guid, patternString); break;
             case "match": match(this.guid, patternString, true); break;
             case "is": is(this.guid, patternString, true); break;
-            default: throw "Invalid operation: Can't call \"or\" after an invalid condition.";
+            default: throw new Errors.InvalidOperation("Can't call \"or\" after an invalid condition.");
         }
         return this;
     };
 
     JsToRegex.prototype.flags = function(flags) {
         if (typeof flags === "undefined") {
-            throw "Argument missing: flags";
+            throw new Errors.ArgumentMissing("flags");
         }
         switch (flags) {
             case 2:
@@ -149,7 +151,7 @@ JsToRegex = (function() {
                 expressions[this.guid].multiline = true;
                 break;
             default:
-                throw "Invalid flag option: " + flags;
+                throw new Errors.InvalidOperation("Invalid flag option");
         }
         return this;
     };
@@ -162,7 +164,7 @@ JsToRegex = (function() {
         if (Object.keys(expressions[guid].pattern).filter(function(x) {
                 return x !== "startsWith" && expressions[guid].pattern[x].length;
             }).shift()) {
-            throw "Invalid operation: startsWith can't be called after other conditions are defined";
+            throw new Errors.InvalidOperation("startsWith can't be called after other conditions are defined");
         }
 
         expressions[guid].pattern.startsWith.push({

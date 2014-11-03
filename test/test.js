@@ -1,4 +1,5 @@
-var assert = require("assert");
+var assert = require("assert"),
+    Errors = require("../Errors");
 
 describe('JsToRegex', function() {
     var js2r = require("../JsToRegex");
@@ -52,7 +53,9 @@ describe('JsToRegex', function() {
                 try {
                     js2r.create().startsWith();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -91,20 +94,22 @@ describe('JsToRegex', function() {
                 try {
                     js2r.create().match("b").startsWith("a");
                 } catch (ex) {
-                    threw = true;
-                } finally {
-                    assert(threw);
+                    if (ex instanceof Errors.InvalidOperation) {
+                        threw = true;
+                    }
                 }
+                assert(threw);
             });
             it('should throw an exception when mulitple calls are interupted by other conditions', function() {
                 var threw = false;
                 try {
                     js2r.create().startsWith("a").match("b").startsWith("c");
                 } catch (ex) {
-                    threw = true;
-                } finally {
-                    assert(threw);
+                    if (ex instanceof Errors.InvalidOperation) {
+                        threw = true;
+                    }
                 }
+                assert(threw);
             });
         });
         describe('endsWith()', function() {
@@ -113,7 +118,9 @@ describe('JsToRegex', function() {
                 try {
                     js2r.create().endsWith();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -148,10 +155,11 @@ describe('JsToRegex', function() {
                 try {
                     js2r.create().endsWith("a").match("b").endsWith("c");
                 } catch (ex) {
-                    threw = true;
-                } finally {
-                    assert(threw);
+                    if (ex instanceof Errors.InvalidOperation) {
+                        threw = true;
+                    }
                 }
+                assert(threw);
             });
         });
         describe('match()', function() {
@@ -160,7 +168,9 @@ describe('JsToRegex', function() {
                 try {
                     js2r.create().match();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -178,7 +188,9 @@ describe('JsToRegex', function() {
                 try {
                     js2r.create().is();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -196,7 +208,9 @@ describe('JsToRegex', function() {
                 try {
                     js2r.create().isAny();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -214,7 +228,9 @@ describe('JsToRegex', function() {
                 try {
                     js2r.create().flags();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -223,7 +239,9 @@ describe('JsToRegex', function() {
                 try {
                     js2r.create().flags(1);
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.InvalidOperation) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -271,7 +289,9 @@ describe('JsToRegex', function() {
                 try {
                     js2r.create().is("a").or();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -280,37 +300,52 @@ describe('JsToRegex', function() {
                 try {
                     js2r.create().or("a");
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.InvalidOperation) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
-            it('it should add two "startsWith" entries when called with "b" after ".startsWith(\"a\")"', function() {
+            it('should add two "startsWith" entries when called with "b" after ".startsWith(\"a\")"', function() {
                 var result = js2r.create().startsWith("a").or("b").getConditions();
                 assert(result.startsWith);
                 assert(result.startsWith.length === 2);
                 assert(result.startsWith[0].pattern === "a");
                 assert(result.startsWith[1].pattern === "b");
             });
-            it('it should add two "endsWith" entries when called with "b" after ".endsWith(\"a\")"', function() {
+            it('should add two "endsWith" entries when called with "b" after ".endsWith(\"a\")"', function() {
                 var result = js2r.create().endsWith("a").or("b").getConditions();
                 assert(result.endsWith);
                 assert(result.endsWith.length === 2);
                 assert(result.endsWith[0].pattern === "a");
                 assert(result.endsWith[1].pattern === "b");
             });
-            it('it should add two "is" entries when called with "b" after ".is(\"a\")"', function() {
+            it('should add two "is" entries when called with "b" after ".is("a")"', function() {
                 var result = js2r.create().is("a").or("b").getConditions();
                 assert(result.is);
                 assert(result.is.length === 2);
                 assert(result.is[0].pattern === "a");
+                assert(result.is[0].order === 0);
                 assert(result.is[1].pattern === "b");
+                assert(result.is[1].order === 1);
             });
-            it('it should add two "match" entries when called with "b" after ".match(\"a\")"', function() {
+            it('should add two "isAny" entries when called with "b" after ".isAny("a")"', function() {
+                var result = js2r.create().isAny("a").or("b").getConditions();
+                assert(result.isAny);
+                assert(result.isAny.length === 2);
+                assert(result.isAny[0].pattern === "a");
+                assert(result.isAny[0].order === 0);
+                assert(result.isAny[1].pattern === "b");
+                assert(result.isAny[1].order === 1);
+            });
+            it('should add two "match" entries when called with "b" after ".match(\"a\")"', function() {
                 var result = js2r.create().match("a").or("b").getConditions();
                 assert(result.match);
                 assert(result.match.length === 2);
                 assert(result.match[0].pattern === "a");
+                assert(result.match[0].order === 0);
                 assert(result.match[1].pattern === "b");
+                assert(result.match[1].order === 1);
             });
         });
     });
@@ -333,7 +368,9 @@ describe('RegexBuilder', function() {
                 try {
                     builder.buildStartsWithString();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -370,7 +407,9 @@ describe('RegexBuilder', function() {
                 try {
                     builder.buildEndsWithString();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -409,7 +448,9 @@ describe('RegexBuilder', function() {
                 try {
                     builder.buildMatchString();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -418,7 +459,9 @@ describe('RegexBuilder', function() {
                 try {
                     builder.buildMatchString("a");
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -448,7 +491,9 @@ describe('RegexBuilder', function() {
                 try {
                     builder.buildIsString();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -460,7 +505,9 @@ describe('RegexBuilder', function() {
                 try {
                     builder.buildIsString(input);
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -490,7 +537,9 @@ describe('RegexBuilder', function() {
                 try {
                     builder.buildIsAnyString();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -502,7 +551,9 @@ describe('RegexBuilder', function() {
                 try {
                     builder.buildIsAnyString(input);
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
@@ -519,7 +570,9 @@ describe('RegexBuilder', function() {
                 try {
                     builder.regexEscape();
                 } catch (ex) {
-                    threw = true;
+                    if (ex instanceof Errors.ArgumentMissing) {
+                        threw = true;
+                    }
                 }
                 assert(threw);
             });
