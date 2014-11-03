@@ -121,14 +121,14 @@ describe('JsToRegex', function() {
                 var result = js2r.create().endsWith("a").getConditions();
                 assert(result.endsWith);
                 assert(result.endsWith.length === 1);
-                assert(result.endsWith[0] === "a");
+                assert(result.endsWith[0].pattern === "a");
             });
             it('should add two "endsWith" entries when called with "a" then with "b"', function() {
                 var result = js2r.create().endsWith("a").endsWith("b").getConditions();
                 assert(result.endsWith);
                 assert(result.endsWith.length === 2);
-                assert(result.endsWith[0] === "a");
-                assert(result.endsWith[1] === "b");
+                assert(result.endsWith[0].pattern === "a");
+                assert(result.endsWith[1].pattern === "b");
             });
             it('should add N "endsWith" entries when called N times', function() {
                 var result = js2r.create(),
@@ -140,7 +140,7 @@ describe('JsToRegex', function() {
                 assert(result.endsWith);
                 assert(result.endsWith.length === iMax);
                 for (var i = 0; i < iMax; i++) {
-                    assert(result.endsWith[i] === "a");
+                    assert(result.endsWith[i].pattern === "a");
                 }
             });
             it('should throw an exception when multiple calls are interupted by other conditions', function() {
@@ -275,8 +275,8 @@ describe('JsToRegex', function() {
                 var result = js2r.create().endsWith("a").or("b").getConditions();
                 assert(result.endsWith);
                 assert(result.endsWith.length === 2);
-                assert(result.endsWith[0] === "a");
-                assert(result.endsWith[1] === "b");
+                assert(result.endsWith[0].pattern === "a");
+                assert(result.endsWith[1].pattern === "b");
             });
             it('it should add two "is" entries when called with "b" after ".is(\"a\")"', function() {
                 var result = js2r.create().is("a").or("b").getConditions();
@@ -363,20 +363,21 @@ describe('RegexBuilder', function() {
             it('should return "a$" for an object with a single "endsWith" condition and value "a"', function() {
                 var expected = "a$",
                     input = {
-                        endsWith: [
-                            "a"
-                        ]
+                        endsWith: [{
+                            pattern: "a"
+                        }]
                     },
                     result = builder.buildEndsWithString(input);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });
-            it('should return "(?:a|b)$" for an object with two "endsWith" conditions and value "a" and "b"', function() {
+            it('should return "(?:a|b)$" for an object with two "endsWith" conditions and values "a" and "b"', function() {
                 var expected = "(?:a|b)$",
                     input = {
-                        endsWith: [
-                            "a",
-                            "b"
-                        ]
+                        endsWith: [{
+                            pattern: "a"
+                        }, {
+                            pattern: "b"
+                        }]
                     },
                     result = builder.buildEndsWithString(input);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');

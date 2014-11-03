@@ -163,7 +163,9 @@ JsToRegex = (function() {
     }
     
     function endsWith(guid, patternString) {
-        expressions[guid].pattern.endsWith.push(patternString);
+        expressions[guid].pattern.endsWith.push({
+            pattern: patternString
+        });
         expressions[guid].previousCall = "endsWith";
     }
     

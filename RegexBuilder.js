@@ -59,14 +59,18 @@ RegexBuilder = (function() {
         if (typeof patternObject === "undefined") {
             throw "Argument missing: patternObject";
         }
-        var parts = patternObject.endsWith || [];
-        switch (parts.length) {
+        if (typeof patternObject.endsWith === "undefined") {
+            return "";
+        }
+        switch (patternObject.endsWith.length) {
             case 0:
                 return "";
             case 1:
-                return this.regexEscape(parts[0]) + "$";
+                return this.regexEscape(patternObject.endsWith[0].pattern) + "$";
             default:
-                return "(?:" + parts.map(this.regexEscape).join('|') + ")$";
+                return "(?:" + patternObject.endsWith.map(function(x) {
+                    return this.regexEscape(x.pattern);
+                }, this).join('|') + ")$";
         }
     };
 
