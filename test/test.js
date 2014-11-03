@@ -477,7 +477,7 @@ describe('RegexBuilder', function() {
                     result = builder.buildMatchString(input, 0);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });
-            it('should return "(a|b|c)" for multiple "match" conditions with the values "a", "b" and "c"', function() {
+            it('should return "(a|b|c)" for multiple "match" conditions with the values "a", "b" and "c" and the same order', function() {
                 var expected, input, result;
                 expected = "(a|b|c)";
                 input = { match: [{ order: 0, pattern: "a" },  { order: 0, pattern: "b" },  { order: 0, pattern: "c"}] };
@@ -523,7 +523,7 @@ describe('RegexBuilder', function() {
                     result = builder.buildIsString(input, 0);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });
-            it('should return "(?:a|b|c)" for multiple "is" conditions with the values "a", "b" and "c"', function() {
+            it('should return "(?:a|b|c)" for multiple "is" conditions with the values "a", "b" and "c" and the same order', function() {
                 var expected, input, result;
                 expected = "(?:a|b|c)";
                 input = { is: [{ order: 0, pattern: "a" },  { order: 0, pattern: "b" },  { order: 0, pattern: "c"}] };
@@ -560,6 +560,31 @@ describe('RegexBuilder', function() {
             it('should return an empty string when no "isAny" condition is supplied', function() {
                 var expected = "", 
                     input  = { }, 
+                    result = builder.buildIsAnyString(input, 0);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should return [abc] for a single "isAny" condition with the value "abc"', function() {
+                var expected = "", 
+                    input  = { 
+                        isAny: [{
+                            pattern: "abc",
+                            order: 0
+                        }]
+                    }, 
+                    result = builder.buildIsAnyString(input, 0);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should return [abcdef] for two "isAny" conditions with the values "abc" and "def" and the same order', function() {
+                var expected = "", 
+                    input  = { 
+                        isAny: [{
+                            pattern: "abc",
+                            order: 0
+                        }, {
+                            pattern: "def",
+                            order: 0
+                        }]
+                    }, 
                     result = builder.buildIsAnyString(input, 0);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });

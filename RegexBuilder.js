@@ -117,8 +117,7 @@ RegexBuilder = (function() {
             return "";
         }
 
-        var allIsConditions = patternObject.is;
-        var currentIsCondition = allIsConditions.filter(function(x) {
+        var currentIsCondition = patternObject.is.filter(function(x) {
             return x.order === order;
         }).map(function(x) {
             return x.pattern;
@@ -128,6 +127,32 @@ RegexBuilder = (function() {
                 return currentIsCondition.shift();
             } else {
                 return "(?:"+currentIsCondition.join('|')+")";
+            }
+        } else {
+            return "";
+        }
+    };
+    
+    RegexBuilder.prototype.buildIsAnyString = function(patternObject, order) {
+        if (typeof patternObject === "undefined") {
+            throw new Errors.ArgumentMissing("patternObject");
+        }
+        if (typeof order === "undefined") {
+            throw new Errors.ArgumentMissing("order");
+        }
+        if (typeof patternObject.is === "undefined") {
+            return "";
+        }
+        var currentIsAnyCondition = patternObject.isAny.filter(function(x) {
+            return x.order === order;
+        }).map(function(x) {
+            return x.pattern;
+        });
+        if (currentIsAnyCondition.length) {
+            if (currentIsAnyCondition.length === 1) {
+                return "[" + currentIsAnyCondition.shift() + "]";
+            } else {
+                return "[" + currentIsAnyCondition.join('') + "]"
             }
         } else {
             return "";
