@@ -21,6 +21,7 @@ JsToRegex = (function() {
                 startsWith: [],
                 endsWith: [],
                 is: [],
+                isAny: [],
                 match: []
             },
             previousCall: "",
@@ -83,6 +84,14 @@ JsToRegex = (function() {
             throw "Argument missing: patternString";
         }
         is(this.guid, patternString, false);
+        return this;
+    };
+    
+    JsToRegex.prototype.isAny = function(patternString) {
+        if (typeof patternString === "undefined") {
+            throw "Argument missing: patternString";
+        }
+        isAny(this.guid, patternString, false);
         return this;
     };
 
@@ -169,6 +178,14 @@ JsToRegex = (function() {
         expressions[guid].previousCall = "endsWith";
     }
     
+    function match(guid, patternString, calledFromOr) {  
+        expressions[guid].pattern.match.push({
+            order: expressions[guid].orderCounter++,
+            pattern: patternString
+        });
+        expressions[guid].previousCall = "match";
+    }
+    
     function is(guid, patternString, calledFromOr) {
         expressions[guid].pattern.is.push({
             order: expressions[guid].orderCounter,
@@ -180,14 +197,16 @@ JsToRegex = (function() {
         expressions[guid].previousCall = "is";
     }
     
-    function match(guid, patternString, calledFromOr) {  
-        expressions[guid].pattern.match.push({
-            order: expressions[guid].orderCounter++,
+    function isAny(guid, patternString, calledFromOr) {
+        expressions[guid].pattern.isAny.push({
+            order: expressions[guid].orderCounter,
             pattern: patternString
         });
-        expressions[guid].previousCall = "match";
-    }
-
+        if (!calledFromOr) {
+            ++expressions[guid].orderCounter;
+        }
+        expressions[guid].previousCall = "isAny";
+    };
     return JsToRegex;
 })();
 

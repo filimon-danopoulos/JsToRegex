@@ -169,6 +169,7 @@ describe('JsToRegex', function() {
                 assert(result.match);
                 assert(result.match.length === 1);
                 assert(result.match[0].pattern === "a");
+                assert(result.match[0].order === 0);
             });
         });
         describe('is()', function() {
@@ -186,6 +187,25 @@ describe('JsToRegex', function() {
                 assert(result.is);
                 assert(result.is.length === 1);
                 assert(result.is[0].pattern === "a");
+                assert(result.is[0].order === 0);
+            });
+        });
+        describe('isAny()', function() {
+            it('should throw when called without any parameters', function() {
+                var threw = false;
+                try {
+                    js2r.create().isAny();
+                } catch (ex) {
+                    threw = true;
+                }
+                assert(threw);
+            });
+            it('should add an "isAny" entry when called with "abc"', function() {
+                var result = js2r.create().isAny("abc").getConditions();
+                assert(result.isAny);
+                assert(result.isAny.length === 1);
+                assert(result.isAny[0].pattern === "abc");
+                assert(result.isAny[0].order === 0);
             });
         });
         describe('flags()', function() {
@@ -433,9 +453,12 @@ describe('RegexBuilder', function() {
                 assert(threw);
             });
             it('should throw an exception when called without an order pattern', function() {
-                var threw = false;
+                var threw = false, 
+                    input = {
+                        is: []
+                    };
                 try {
-                    builder.buildIsString("a");
+                    builder.buildIsString(input);
                 } catch (ex) {
                     threw = true;
                 }
@@ -458,6 +481,35 @@ describe('RegexBuilder', function() {
                 expected = "(?:a|b|c)";
                 input = { is: [{ order: 0, pattern: "a" },  { order: 0, pattern: "b" },  { order: 0, pattern: "c"}] };
                 result = builder.buildIsString(input, 0);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+        });
+        describe('buildIsAnyAstring()', function() {
+            it('should throw an exception when called without any parameters', function() {
+                var threw = false;
+                try {
+                    builder.buildIsAnyString();
+                } catch (ex) {
+                    threw = true;
+                }
+                assert(threw);
+            });
+            it('should throw an exception when called without an order parameter', function() {
+                var threw = false,
+                    input = {
+                        isAny: []
+                    };
+                try {
+                    builder.buildIsAnyString(input);
+                } catch (ex) {
+                    threw = true;
+                }
+                assert(threw);
+            });
+            it('should return an empty string when no "isAny" condition is supplied', function() {
+                var expected = "", 
+                    input  = { }, 
+                    result = builder.buildIsAnyString(input, 0);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });
         });
