@@ -23,10 +23,14 @@ describe('JsToRegex', function() {
         describe('isMatch()', function() {
             it('should return true for a valid match', function() {
                 assert(js2r.create("test").is(js2r.ANY).isMatch());
-                assert(js2r.create("test").startsWith("t").is(js2r.ANY).endsWith("t"));
+                assert(js2r.create("test").startsWith("t").is(js2r.ANY).endsWith("t").isMatch());
             });
             it('should return false for an invalid match', function() {
-                assert(js2r.create("test").startsWith("a"));
+                assert(!js2r.create("test").startsWith("a").isMatch());
+            });
+            it('should return true when a string starts with a value passed to a "startsWith" call', function() {
+                assert(js2r.create("test on thing string").startsWith("test").isMatch());
+                assert(js2r.create("on thing string").startsWith("test").or("on").isMatch());
             });
         });
         describe('getMatch()', function() {
@@ -295,13 +299,13 @@ describe('RegexBuilder', function() {
         builder = new RegexBuilder();
         
     describe('protype', function() {
-        describe('buildRegex', function() {
+        describe('buildRegex()', function() {
             it('should compile a JsToRegex object to a regex');
         });
-        describe('buildFlagsString', function() {
+        describe('buildFlagsString()', function() {
             it('should return a string representing flag');
         });
-        describe('buildStartsWithString', function() {
+        describe('buildStartsWithString()', function() {
             it('should throw an exception when called without any parameters', function() {
                 var threw = false;
                 try {
@@ -311,13 +315,13 @@ describe('RegexBuilder', function() {
                 }
                 assert(threw);
             });
-            it('should return an empty string when no "beginsWith" condition is supplied', function() {
+            it('should return an empty string when no "startsWith" condition is supplied', function() {
                 var expected = "", 
                     input  = { }, 
                     result = builder.buildStartsWithString(input, 0);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });
-            it('should retrun "^a" for an object with a single startsWith condition', function() {
+            it('should retrun "^a" for an object with a single "startsWith" condition with value "a"', function() {
                 var expected = "^a",
                     input = {
                         startsWith: [{pattern: "a"}]
@@ -325,8 +329,8 @@ describe('RegexBuilder', function() {
                     result = builder.buildStartsWithString(input);
                 assert(result === expected, '"' + result + '" === "' + expected + '"');
             });
-            it('should return "^[a|b]" for an object with multiple "startsWith" conditions', function() {
-                var expected = "^[a|b]",
+            it('should return "^(?:a|b)" for an object with two "startsWith" conditions with value "a" and "b"', function() {
+                var expected = "^(?:a|b)",
                     input = {
                         startsWith: [{
                             pattern: "a"
@@ -338,7 +342,7 @@ describe('RegexBuilder', function() {
                 assert(result === expected, '"' + result + '" === "' + expected + '"');
             });
         });
-        describe('buildEndsWithString', function() {
+        describe('buildEndsWithString()', function() {
             it('should throw an exception when called without any parameters', function() {
                 var threw = false;
                 try {
@@ -354,8 +358,29 @@ describe('RegexBuilder', function() {
                     result = builder.buildEndsWithString(input, 0);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });
+            it('should return "a$" for an object with a single "endsWith" condition and value "a"', function() {
+                var expected = "a$",
+                    input = {
+                        endsWith: [
+                            "a"
+                        ]
+                    },
+                    result = builder.buildEndsWithString(input);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should return "(?:a|b)$" for an object with two "endsWith" conditions and value "a" and "b"', function() {
+                var expected = "(?:a|b)$",
+                    input = {
+                        endsWith: [
+                            "a",
+                            "b"
+                        ]
+                    },
+                    result = builder.buildEndsWithString(input);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
         });
-        describe('buildMatchString', function() {
+        describe('buildMatchString()', function() {
             it('should throw an exception when called without any parameters', function() {
                 var threw = false;
                 try {
@@ -380,8 +405,21 @@ describe('RegexBuilder', function() {
                     result = builder.buildMatchString(input, 0);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });
+            it('should return "(a)" for a single "match" condition with the value "a".', function() {
+                var expected = "(a)", 
+                    input  = { match: [{ order: 0,pattern: "a" }] }, 
+                    result = builder.buildMatchString(input, 0);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
+            it('should return "(a|b|c)" for multiple "match" conditions with the values "a", "b" and "c"', function() {
+                var expected, input, result;
+                expected = "(a|b|c)";
+                input = { match: [{ order: 0, pattern: "a" },  { order: 0, pattern: "b" },  { order: 0, pattern: "c"}] };
+                result = builder.buildMatchString(input, 0);
+                assert(result === expected, '"'+ result + '" === "' + expected + '"');
+            });
         });
-        describe('buildIsString', function() {
+        describe('buildIsString()', function() {
             it('should throw an exception when called without any parameters', function() {
                 var threw = false;
                 try {
@@ -406,21 +444,21 @@ describe('RegexBuilder', function() {
                     result = builder.buildIsString(input, 0);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });
-            it('should return a string representing an "is" pattern for a single "is" condition.', function() {
+            it('should return "a" for a single "is" condition with the value "a".', function() {
                 var expected = "a", 
                     input  = { is: [{ order: 0,pattern: "a" }] }, 
                     result = builder.buildIsString(input, 0);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });
-            it('should return a string representing an "is" pattern for multiple "is" conditions.', function() {
+            it('should return "(?:a|b|c)" for multiple "is" conditions with the values "a", "b" and "c"', function() {
                 var expected, input, result;
-                expected = "[a|b|c]";
+                expected = "(?:a|b|c)";
                 input = { is: [{ order: 0, pattern: "a" },  { order: 0, pattern: "b" },  { order: 0, pattern: "c"}] };
                 result = builder.buildIsString(input, 0);
                 assert(result === expected, '"'+ result + '" === "' + expected + '"');
             });
         });
-        describe('regexEscape', function() {
+        describe('regexEscape()', function() {
             it('should throw an exception when called without a parameter', function() {
                 var threw = false;
                 try {

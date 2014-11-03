@@ -49,9 +49,9 @@ RegexBuilder = (function() {
             case 1:
                 return "^" + this.regexEscape(parts[0].pattern);
             default:
-                return "^[" + parts.map(function(x) { 
+                return "^(?:" + parts.map(function(x) { 
                     return this.regexEscape(x.pattern);
-                }, this).join('|') + "]";
+                }, this).join('|') + ")";
         }
     };
 
@@ -66,7 +66,7 @@ RegexBuilder = (function() {
             case 1:
                 return this.regexEscape(parts[0]) + "$";
             default:
-                return "[" + parts.map(this.regexEscape).join('|') + "]$";
+                return "(?:" + parts.map(this.regexEscape).join('|') + ")$";
         }
     };
 
@@ -82,12 +82,18 @@ RegexBuilder = (function() {
         }
         
         var allMatchConditions = patternObject.match;
-        var currentMatchCondition = allMatchConditions.filter(function(x) {
+        var currentMatchConditions = allMatchConditions.filter(function(x) {
             return x.order === order;
-        }).shift();
+        }).map(function(x) {
+            return x.pattern;
+        });
 
-        if (currentMatchCondition) {
-            return "(" + patternObject.match[0].pattern + ")";
+        if (currentMatchConditions.length) {
+            if (currentMatchConditions.length === 1) {
+                return "(" + currentMatchConditions.shift() + ")";
+            } else {
+                return "(" + currentMatchConditions.join('|') + ")";
+            }
         } else {
             return "";
         }
@@ -114,7 +120,7 @@ RegexBuilder = (function() {
             if (currentIsCondition.length === 1) {
                 return currentIsCondition.shift();
             } else {
-                return "["+currentIsCondition.join('|')+"]";
+                return "(?:"+currentIsCondition.join('|')+")";
             }
         } else {
             return "";
