@@ -10,15 +10,13 @@ JsToRegex = (function() {
         regexBuilder = new RegexBuilder();
 
     function JsToRegex() {
+        if (!(this instanceof JsToRegex)) {
+            return new JsToRegex();
+        }
         this.guid = Math.floor(Math.random() * 100000000000);
-    }
-
-    // Static functions and constants
-    JsToRegex.create = function(testString) {
-        var newInstance = new JsToRegex();
-        expressions[newInstance.guid] = {
+        expressions[this.guid] = {
             orderCounter: -1,
-            testString: testString,
+            testString: "",
             pattern: {
                 startsWith: [],
                 endsWith: [],
@@ -31,10 +29,12 @@ JsToRegex = (function() {
             ignoreCase: false,
             multiline: false
         };
-        return newInstance;
-    };
+    }
 
+    // Static functions and constants
     JsToRegex.ANY = ".*";
+    JsToRegex.ANY.ignoreEscape = true;
+    
     JsToRegex.flags = {
         GLOBAL: 2,
         IGNORE_CASE: 4,
@@ -43,6 +43,11 @@ JsToRegex = (function() {
 
 
     // Public methods
+    JsToRegex.prototype.target = function(testString) {
+        expressions[this.guid].testString = testString;
+        return this;
+    };
+    
     JsToRegex.prototype.isMatch = function() {
         var regex = regexBuilder.buildRegex(expressions[this.guid]),
             testString = expressions[this.guid].testString,

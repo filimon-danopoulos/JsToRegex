@@ -163,6 +163,9 @@ RegexBuilder = (function() {
         if (typeof patternString === "undefined") {
             throw new Errors.ArgumentMissing("patternObject");
         }
+        if (patternString.ignoreEscape) {
+            return patternString;
+        }
         return patternString.replace(/[-[\]{}()*+?.\\^$|#]/g, "\\$&");
     };
     
