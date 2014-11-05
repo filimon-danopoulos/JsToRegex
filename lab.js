@@ -1,6 +1,11 @@
-var js2r = require("./js2r").js2r;
-try {
-    js2r.create("test").or("b");
-} catch (ex) {
-    console.log(ex);
-}
+var js2r = require("./JsToRegex");
+
+var x = js2r.create("https://www.test.com")
+    .is("https")
+    .is("://")
+    .match(js2r.ANY)
+    .is(".")
+    .is(js2r.ANY)
+    .getMatch();
+
+console.log(x);

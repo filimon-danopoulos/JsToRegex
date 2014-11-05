@@ -224,7 +224,7 @@ describe('JsToRegex', function() {
             });
         });
         describe('isNone()', function() {
-            it('should throw when called without any parameters', function() {
+            it('should throw when called without any parameters'/*, function() {
                 var threw = false;
                 try {
                     js2r.create().isNone();
@@ -234,14 +234,14 @@ describe('JsToRegex', function() {
                     }
                 }
                 assert(threw);
-            });
-            it('should add an "isNone" entry when called with "a"', function() {
+            }*/);
+            it('should add an "isNone" entry when called with "a"'/*, function() {
                 var result = js2r.create().isNone("a").getConditions();
                 assert(result.isNone);
                 assert(result.isNone.length === 1);
                 assert(result.isNone[0].pattern === "a");
                 assert(result.isNone[0].order === 0);
-            });
+            }*/);
         });
         describe('flags()', function() {
             it('should throw when called without any parameters', function() {
